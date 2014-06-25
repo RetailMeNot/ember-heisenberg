@@ -1,0 +1,48 @@
+{
+  "name": "ember-heisenberg",
+  "version": "0.8.0",
+  "description": "Ember-Heisenberg is a simple REST-like serialization and transport framework for Ember.js apps.",
+  "main": "ember-heisenberg.js",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-bump": "0.0.14",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-compress": "^0.9.1",
+    "grunt-contrib-copy": "~0.4.0",
+    "grunt-contrib-jshint": "~0.6.3",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-karma": "^0.8.3",
+    "karma": "~0.12",
+    "karma-chrome-launcher": "~0.1",
+    "karma-coverage": "~0.1",
+    "karma-firefox-launcher": "~0.1",
+    "karma-jasmine": "~0.1.0",
+    "karma-phantomjs-launcher": "~0.1",
+    "karma-requirejs": "~0.2.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start --single-run --browsers Firefox"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/RetailMeNot/ember-heisenberg.git"
+  },
+  "keywords": [
+    "Ember.js",
+    "REST",
+    "serialization",
+    "deserialization",
+    "persistence"
+  ],
+  "author": "RetailMeNot, Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RetailMeNot/ember-heisenberg/issues"
+  },
+  "homepage": "https://github.com/RetailMeNot/ember-heisenberg"
+}

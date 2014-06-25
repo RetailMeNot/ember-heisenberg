@@ -1,0 +1,25 @@
+{
+  "name": "ember-heisenberg",
+  "version": "0.8.0",
+  "homepage": "https://github.com/RetailMeNot/ember-heisenberg",
+  "authors": [
+    "RetailMeNot, Inc.",
+  ],
+  "description": "Ember-Heisenberg is a simple REST-like serialization and transport framework for Ember.js apps.",
+  "main": "ember-heisenberg.js",
+  "keywords": [
+    "Ember.js",
+    "REST",
+    "serialization",
+    "deserialization",
+    "persistence"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
