@@ -1,6 +1,7 @@
 require.config({
   keepBuildDir: false,
   useStrict: true,
+  wrap: true,
 
   optimize: 'none',
 

@@ -92,7 +92,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-bump');
 
   // Default task(s).
-  grunt.registerTask('build', ['clean', 'jshint', 'karma', 'requirejs']);
-  grunt.registerTask('dist', ['build', 'copy', 'uglify', 'compress', 'clean']);
+  grunt.registerTask('build', ['clean', 'jshint', 'karma:unit', 'requirejs']);
+  grunt.registerTask('dist', ['build', 'copy', 'uglify', 'clean']);
   grunt.registerTask('default', ['dist']);
 };
