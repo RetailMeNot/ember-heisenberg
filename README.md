@@ -26,29 +26,27 @@ RPC-oriented endpoints.
 require('ember-heisenberg');
 
 // Model definitions
-var SO = Em.h.SerializableObject;
 
-App.Company = SO.extend({
-	name: SO.stringField()
+App.Company = EH.Object.extend({
+	name: EH.stringField()
 });
 
 var Company = App.Company;
 
-App.Employee = SO.extend({
-	id: SO.numberField(),
-	name: SO.stringField(),
-	aliases: SO.stringList(),
+App.Employee = EH.Object.extend({
+	id: EH.numberField(),
+	name: EH.stringField(),
+	aliases: EH.stringList(),
 
 	// embedded objects
-	company: SO.field(Company),
+	company: EH.field(Company),
 });
 
 var Employee = App.Employee;
 
 // Resource Setup
-var Resource = Em.h.Resource;
 
-App.EmployeeResource = Resource.extend();
+App.EmployeeResource = EH.Resource.extend();
 
 App.EmployeeResource.reopenClass({
 	load: function(id) {

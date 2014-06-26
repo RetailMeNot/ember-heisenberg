@@ -128,5 +128,6 @@ define([
     }
   };
 
+  EH.Type = EH.SerializableType;
   return EH.SerializableType;
 });

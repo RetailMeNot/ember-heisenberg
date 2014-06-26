@@ -26,7 +26,6 @@ define([
      */
     body: function (json) {
       var contentType = this.get('_settings.contentType');
-      // TODO: use Utils.isString after moving move Utils into RMN package
       if (contentType.match(/json/) && Em.typeOf(json) !== Em.typeOf('string')) {
         json = JSON.stringify(json);
       }

@@ -191,5 +191,6 @@ define([
     }
   });
 
+  EH.Array = EH.SerializableArray;
   return EH.SerializableArray;
 });

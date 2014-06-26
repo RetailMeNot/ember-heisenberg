@@ -11,8 +11,8 @@ define([
   var EH = Em.Namespace.create( /** @lends EH# */ {
   });
 
-  Em.assert(Em.exports.h === undefined, 'An export already exists for Ember.EH.*');
-  Em.exports.h = EH;
+  Em.assert(Em.exports.EH === undefined, 'An export already exists for EH.*');
+  Em.exports.EH = EH;
 
   return EH;
 

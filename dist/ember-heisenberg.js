@@ -1,4 +1,4 @@
-define('EH',[
+(function () {define('EH',[
   'ember'
 ], function (Em) {
 
@@ -11,8 +11,8 @@ define('EH',[
   var EH = Em.Namespace.create( /** @lends EH# */ {
   });
 
-  Em.assert(Em.exports.h === undefined, 'An export already exists for Ember.EH.*');
-  Em.exports.h = EH;
+  Em.assert(Em.exports.EH === undefined, 'An export already exists for EH.*');
+  Em.exports.EH = EH;
 
   return EH;
 
@@ -480,7 +480,6 @@ define('PutRequest',[
      */
     body: function (json) {
       var contentType = this.get('_settings.contentType');
-      // TODO: use Utils.isString after moving move Utils into RMN package
       if (contentType.match(/json/) && Em.typeOf(json) !== Em.typeOf('string')) {
         json = JSON.stringify(json);
       }
@@ -738,6 +737,7 @@ define('SerializableArray',[
     }
   });
 
+  EH.Array = EH.SerializableArray;
   return EH.SerializableArray;
 });
 
@@ -871,6 +871,7 @@ define('SerializableType',[
     }
   };
 
+  EH.Type = EH.SerializableType;
   return EH.SerializableType;
 });
 define('SerializableObject',[
@@ -1384,6 +1385,19 @@ define('SerializableObject',[
    */
   var Meta;  // need the 'var' because Chrome will yield a ReferenceError otherwise
 
+  EH.Object = EH.SerializableObject;
+  EH.field = EH.SerializableObject.field;
+  EH.list = EH.SerializableObject.list;
+  EH.booleanField = EH.SerializableObject.booleanField;
+  EH.dateField = EH.SerializableObject.dateField;
+  EH.numberField = EH.SerializableObject.numberField;
+  EH.rawField = EH.SerializableObject.rawField;
+  EH.stringField = EH.SerializableObject.stringField;
+  EH.booleanList = EH.SerializableObject.booleanList;
+  EH.dateList = EH.SerializableObject.dateList;
+  EH.numberList = EH.SerializableObject.numberList;
+  EH.rawList = EH.SerializableObject.rawList;
+  EH.stringList = EH.SerializableObject.stringList;
   return EH.SerializableObject;
 });
 
@@ -1658,7 +1672,7 @@ define('Resource',[
 
   return EH.Resource;
 });
-define('modules',[
+define('ember-heisenberg',[
   './EH',
   './AjaxRequest',
   './DeleteRequest',
@@ -1667,11 +1681,7 @@ define('modules',[
   './PutRequest',
   './Resource',
   './SerializableObject'
-],function(){
-});
-define('ember-heisenberg',[
-  './EH',
-  './modules'
 ],function (EH) {
   return EH;
 });
+}());

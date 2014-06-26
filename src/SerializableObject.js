@@ -509,5 +509,18 @@ define([
    */
   var Meta;  // need the 'var' because Chrome will yield a ReferenceError otherwise
 
+  EH.Object = EH.SerializableObject;
+  EH.field = EH.SerializableObject.field;
+  EH.list = EH.SerializableObject.list;
+  EH.booleanField = EH.SerializableObject.booleanField;
+  EH.dateField = EH.SerializableObject.dateField;
+  EH.numberField = EH.SerializableObject.numberField;
+  EH.rawField = EH.SerializableObject.rawField;
+  EH.stringField = EH.SerializableObject.stringField;
+  EH.booleanList = EH.SerializableObject.booleanList;
+  EH.dateList = EH.SerializableObject.dateList;
+  EH.numberList = EH.SerializableObject.numberList;
+  EH.rawList = EH.SerializableObject.rawList;
+  EH.stringList = EH.SerializableObject.stringList;
   return EH.SerializableObject;
 });

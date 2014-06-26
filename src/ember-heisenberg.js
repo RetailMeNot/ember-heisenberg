@@ -1,6 +1,12 @@
 define([
   './EH',
-  './modules'
+  './AjaxRequest',
+  './DeleteRequest',
+  './GetRequest',
+  './PostRequest',
+  './PutRequest',
+  './Resource',
+  './SerializableObject'
 ],function (EH) {
   return EH;
 });
