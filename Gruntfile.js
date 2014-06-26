@@ -5,13 +5,13 @@ module.exports = function (grunt) {
     requirejs: {
       compile: {
         options: {
-          baseUrl: "src/",
-          dir: "build/",
-          mainConfigFile: "src/build.js",
+          baseUrl: 'src/',
+          dir: 'build/',
+          mainConfigFile: 'src/build.js',
           modules: [
             {
-              name: "ember-heisenberg",
-              exclude: ["ember", "moment"]
+              name: 'ember-heisenberg',
+              exclude: ['ember', 'moment']
             }
           ]
         }
@@ -54,15 +54,6 @@ module.exports = function (grunt) {
         dest: 'dist/<%= pkg.name %>.min.js'
       }
     },
-    compress: {
-      main: {
-        options: {
-          mode: 'gzip'
-        },
-        src: 'dist/<%= pkg.name %>.min.js',
-        dest: 'dist/<%= pkg.name %>.min.js.gz'
-      }
-    },
     clean: ['build/**'],
 
     bump: {
@@ -88,7 +79,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-bump');
 
   // Default task(s).
