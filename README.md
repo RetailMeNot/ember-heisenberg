@@ -1,5 +1,5 @@
-Ember-Heisenberg
-================
+# Ember-Heisenberg ![Build Status](https://travis-ci.org/RetailMeNot/ember-heisenberg.png?branch=master)
+
 Ember-Heisenberg is a simple REST-like serialization and transport framework for
 Ember.js applications. At its core, it provides a fluent, customizable,
 promise-oriented API to define and bind client-side models to server-side
@@ -58,7 +58,7 @@ App.EmployeeResource.reopenClass({
 			.produces(Employee);
 
 		// This returns an object which has getResponsePromise() and getResponseValue() functions
-		return EmployeeResource.executeRequest(request);
+		return App.EmployeeResource.executeRequest(request);
 	},
 
 	create: function(Employee) {
@@ -67,7 +67,7 @@ App.EmployeeResource.reopenClass({
 		.body(Employee.toJson())
 		.produces(Employee);
 
-		return EmployeeResource.executeRequest(request);
+		return App.EmployeeResource.executeRequest(request);
 	}
  });
 
@@ -80,8 +80,8 @@ var isBluth = App.EmployeeResource
 				.getResponsePromise()
 				.then(doSomethingWithEmployee);
 
-function doSomethingWithEmployee(Employee) {
-	return Employee.get('name') === 'Bluth';
+function doSomethingWithEmployee(employee) {
+	return employee.get('name') === 'Bluth';
 }
 
 // ...or use them as values, which will be asynchronously set
@@ -93,11 +93,11 @@ var employee = App.EmployeeResource
 var employee = App.Employee.create()
 employee.set('name', 'Boy George')
 
-var resultOfSave = EmployeeResource
+var resultOfSave = App.EmployeeResource
 						.create(Employee)
 						.getResponsePromise()
 						.then(doSomethingPostSaveSuccess)
-						.fail(doSomethingPostSaveFail);
+						.catch(doSomethingPostSaveFail);
 
 function doSomethingPostSaveSuccess() {
 	return 1;
@@ -108,16 +108,14 @@ function doSomethingPostSaveFail() {
 }
 ```
 
-Building Ember-Heisenberg
-=========================
+# Building Ember-Heisenberg
 
 1. Install node: http://nodejs.org/
 - Install dependencies: `npm install`
 - Build and run tests: `grunt`
 - Output will be in `dist/`
 
-Tests
-=====
+# Tests
 
 Heisenberg uses [Karma](http://karma-runner.github.io) as its test runner. Tests are run automatically
 as a part of the build process, but you can invoke the tests manually with `grunt karma:unit`.
