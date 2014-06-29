@@ -1,6 +1,6 @@
 {
   "name": "ember-heisenberg",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Ember-Heisenberg is a simple REST-like serialization and transport framework for Ember.js apps.",
   "main": "ember-heisenberg.js",
   "devDependencies": {
