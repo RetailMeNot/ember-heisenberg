@@ -1,15 +1,33 @@
 // Karma configuration
 
+// ES5 Shim is necessary for PhantomJS support
+var es5ShimPlugin = {
+  'framework:shim': ['factory', function(files) {
+    files.unshift({
+      pattern: 'node_modules/es5-shim/es5-shim.js',
+      included: true,
+      served: true,
+      watched: false
+    });
+  }]
+};
+
 module.exports = function(config) {
   config.set({
 
 
     // frameworks to use
-    frameworks: ['jasmine', 'requirejs'],
+    frameworks: ['jasmine'],
 
 
     // list of files / patterns to load in the browser
     files: [
+      'node_modules/es5-shim/es5-shim.js',
+
+      // Hack to load RequireJS after the shim libs (see https://github.com/karma-runner/karma/issues/699)
+      'node_modules/requirejs/require.js',
+      'node_modules/karma-requirejs/lib/adapter.js',
+
       'tests/test-main.js',
 
       {pattern: './lib/**/*.js', included: false},
@@ -24,6 +42,12 @@ module.exports = function(config) {
       '**/modules.js',
       '**/*-dist.js'
     ],
+
+
+    // preprocessors to use
+    preprocessors: {
+      'src/*.js': ['coverage']
+    },
 
 
     // test results reporter to use
@@ -56,7 +80,7 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['Chrome'],
+    browsers: ['PhantomJS', 'Chrome', 'Firefox'],
 
 
     // If browser does not capture in given timeout [ms], kill it
