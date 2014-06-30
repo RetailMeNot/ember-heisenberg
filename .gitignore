@@ -5,3 +5,4 @@ public/lib
 *.iml
 .idea
 build
+coverage

@@ -39,6 +39,7 @@ define([
     aBooleanField: SerializableObject.booleanField(),
     aDateField: SerializableObject.dateField(),
     aNumberField: SerializableObject.numberField(),
+    aRawField: SerializableObject.rawField(),
     aStringField: SerializableObject.stringField(),
 
     aStringListField: SerializableObject.stringList(),
@@ -67,6 +68,19 @@ define([
           isEqualHelper(thisProperties.aNestedObjectListField, otherProperties.aNestedObjectListField);
     }
   });
+
+
+  /**
+   * @class RootWrappedTestObject
+   * @extends EH.SerializableObject
+   * @mixes Ember.ClassMixin
+   */
+  var RootWrappedTestObject = TestObject.extend(/** @lends RootWrappedTestObject# */{
+  });
+  RootWrappedTestObject.reopenClass({
+    rootKey: 'rootWrapper'
+  });
+
 
   describe('SerializableObjects', function () {
 
@@ -104,9 +118,253 @@ define([
       // Transients
       expect(expected.get('aTransientField')).toEqual(actual.get('aTransientField'));
       expect(expected.get('aTransientListField')).toEmberEqual(actual.get('aTransientListField'));
-    };
+    }
 
-    describe('should be Copyable for', function() {
+    describe('should serialize', function () {
+      it ('booleans', function () {
+        testObj.set('aBooleanField', true);
+
+        var serializedObj = testObj.toObject();
+
+        expect(serializedObj.aBooleanField).toBe(true);
+        expect(serializedObj.aDateField).toBeUndefined();
+        expect(serializedObj.aNumberField).toBeUndefined();
+
+        expect(serializedObj.aStringField).toBeUndefined();
+        expect(serializedObj.aStringListField).toEqual([]);
+
+        expect(serializedObj.aNestedObjectField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      });
+
+      it('dates into ISO-8601 formatted strings', function () {
+        var now = new Date();
+        testObj.set('aDateField', now);
+
+        var serializedObj = testObj.toObject();
+
+        expect(serializedObj.aBooleanField).toBeUndefined();
+        expect(serializedObj.aDateField).toBe(moment(now).format());
+        expect(serializedObj.aNumberField).toBeUndefined();
+        expect(serializedObj.aStringField).toBeUndefined();
+        expect(serializedObj.aNestedObjectField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      });
+
+      it('numbers', function () {
+        testObj.set('aNumberField', 123);
+
+        var serializedObj = testObj.toObject();
+
+        expect(serializedObj.aBooleanField).toBeUndefined();
+        expect(serializedObj.aDateField).toBeUndefined();
+        expect(serializedObj.aNumberField).toBe(123);
+        expect(serializedObj.aStringField).toBeUndefined();
+        expect(serializedObj.aNestedObjectField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      });
+
+      it('strings', function () {
+        testObj.set('aStringField', 'foo');
+
+        var serializedObj = testObj.toObject();
+
+        expect(serializedObj.aBooleanField).toBeUndefined();
+        expect(serializedObj.aDateField).toBeUndefined();
+        expect(serializedObj.aNumberField).toBeUndefined();
+        expect(serializedObj.aStringField).toBe('foo');
+        expect(serializedObj.aNestedObjectField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      });
+
+      it('raw values without any modification', function () {
+        var rawValue = new Date();
+        testObj.set('aRawField', rawValue);
+
+        var serializedObj = testObj.toObject();
+        expect(serializedObj.aRawField).toBeDefined();
+        expect(serializedObj.aRawField).toEqual(rawValue);
+      });
+
+      it('nested objects', function () {
+        var nestedObjectInstance = NestedObject.create().setProperties({aNestedStringField: 'foo', aNestedTransientField: 'fooTransient'});
+        testObj.set('aNestedObjectField', nestedObjectInstance);
+
+        var serializedObj = testObj.toObject();
+
+        expect(serializedObj.aBooleanField).toBeUndefined();
+        expect(serializedObj.aDateField).toBeUndefined();
+        expect(serializedObj.aNumberField).toBeUndefined();
+        expect(serializedObj.aStringField).toBeUndefined();
+        expect(serializedObj.aNestedObjectField instanceof Object).toBe(true);
+        expect(serializedObj.aNestedObjectField.aNestedStringField).toBe('foo');
+        expect(serializedObj.aNestedObjectField.aNestedTransientField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      });
+
+      it('into JSON', function () {
+        var nestedObj = NestedObject.create().setProperties({
+          aNestedStringField: 'foo',
+          aNestedTransientField: 'fooTransient'
+        });
+
+        testObj.setProperties({
+          aBooleanField: true,
+          aDateField: null,
+          aNumberField: 123,
+          aStringField: 'hello, world',
+          aNestedObjectField: nestedObj
+        });
+
+        expect(testObj.toJson())
+          .toEqual(JSON.stringify({
+            aBooleanField: true,
+            aNumberField: 123,
+            aStringField: 'hello, world',
+            aStringListField: [],
+            aNestedObjectField: {
+              aNestedStringField: 'foo'
+            },
+            aNestedObjectListField: []
+          })
+        );
+      });
+
+      it('into JSON with root-wrapping, if a rootKey is specified', function () {
+        var nestedObj = NestedObject.create().setProperties({
+          aNestedStringField: 'foo',
+          aNestedTransientField: 'fooTransient'
+        });
+
+        var testObj = RootWrappedTestObject.create();
+        testObj.setProperties({
+          aBooleanField: true,
+          aDateField: null,
+          aNumberField: 123,
+          aStringField: 'hello, world',
+          aNestedObjectField: nestedObj
+        });
+
+        expect(testObj.toWrappedJson())
+          .toEqual(JSON.stringify({
+            rootWrapper: {
+              aBooleanField: true,
+              aNumberField: 123,
+              aStringField: 'hello, world',
+              aStringListField: [],
+              aNestedObjectField: {
+                aNestedStringField: 'foo'
+              },
+              aNestedObjectListField: []
+            }
+          })
+        );
+      });
+
+      describe('lists of', function () {
+        it('nested objects', function () {
+          var nestedObjectInstance1 = NestedObject.create().setProperties({aNestedStringField: 'foo', aNestedTransientField: 'fooTransient'});
+          var nestedObjectInstance2 = NestedObject.create().setProperties({aNestedStringField: 'bar', aNestedTransientField: 'barTransient'});
+          testObj.set('aNestedObjectListField.content', [nestedObjectInstance1, nestedObjectInstance2]);
+
+          var serializedObj = testObj.toObject();
+
+          expect(serializedObj.aBooleanField).toBeUndefined();
+          expect(serializedObj.aDateField).toBeUndefined();
+          expect(serializedObj.aNumberField).toBeUndefined();
+          expect(serializedObj.aStringField).toBeUndefined();
+          expect(serializedObj.aNestedObjectField).toBeUndefined();
+          expect(serializedObj.aNestedObjectListField instanceof Array).toBe(true);
+          expect(serializedObj.aNestedObjectListField[0] instanceof Object).toBe(true);
+          expect(serializedObj.aNestedObjectListField[0].aNestedStringField).toBe('foo');
+          expect(serializedObj.aNestedObjectListField[0].aNestedTransientField).toBeUndefined();
+          expect(serializedObj.aNestedObjectListField[1] instanceof Object).toBe(true);
+          expect(serializedObj.aNestedObjectListField[1].aNestedStringField).toBe('bar');
+          expect(serializedObj.aNestedObjectListField[1].aNestedTransientField).toBeUndefined();
+          expect(serializedObj.aTransientField).toBeUndefined();
+          expect(serializedObj.aTransientListField).toBeUndefined();
+        })
+      });
+
+    });
+
+    describe('should deserialize', function () {
+      it('booleans', function () {
+        SerializableObject.fromJson({aBooleanField: 'true'}, TestObject, testObj);
+
+        expect(testObj.get('aBooleanField')).toBe(true);
+      });
+
+      it('booleans with numeric values', function () {
+        SerializableObject.fromJson({aBooleanField: 1}, TestObject, testObj);
+
+        expect(testObj.get('aBooleanField')).toBe(true);
+      });
+
+      it('booleans with unknown values into false', function () {
+        SerializableObject.fromJson({aBooleanField: function () {}}, TestObject, testObj);
+
+        expect(testObj.get('aBooleanField')).toBe(false);
+      });
+
+      it('numbers', function () {
+        SerializableObject.fromJson({aNumberField: '123'}, TestObject, testObj);
+
+        expect(testObj.get('aNumberField')).toBe(123);
+      });
+
+      it('strings', function () {
+        SerializableObject.fromJson({aStringField: 'foo'}, TestObject, testObj);
+
+        expect(testObj.get('aStringField')).toBe('foo');
+      });
+
+      it('dates from ISO-8601 formatted strings', function () {
+        var now = moment().format();
+        SerializableObject.fromJson({aDateField: now}, TestObject, testObj);
+
+        var dateFieldValue = testObj.get('aDateField');
+        expect(dateFieldValue instanceof Date).toBe(true);
+        expect(moment(dateFieldValue).format()).toBe(now);
+      });
+
+      it('raw values without any modification', function () {
+        var rawValue = new Date();
+        SerializableObject.fromJson({aRawField: rawValue}, TestObject, testObj);
+
+        var rawFieldValue = testObj.get('aRawField');
+        expect(rawFieldValue).toBeDefined();
+        expect(rawFieldValue).toEqual(rawValue);
+      });
+
+      it('embedded objects', function () {
+        SerializableObject.fromJson({aNestedObjectField: {aNestedStringField:'foo'}}, TestObject, testObj);
+
+        var nestedObjectFieldValue = testObj.get('aNestedObjectField');
+        expect(nestedObjectFieldValue instanceof NestedObject).toBe(true);
+        expect(nestedObjectFieldValue).not.toBeUndefined();
+        expect(nestedObjectFieldValue.get('aNestedStringField')).toBe('foo');
+      });
+
+      it('transient fields', function () {
+        SerializableObject.fromJson({aTransientField: 'foo'}, TestObject, testObj);
+
+        expect(testObj.get('aTransientField')).toBe('foo');
+      });
+    });
+
+    describe('should be Copyable for', function () {
       afterEach(function() {
         var copy = testObj.copy();
         assertDeepEquals(copy, testObj);
@@ -211,200 +469,147 @@ define([
 
     });
 
-    it('should serialize booleans', function () {
-      testObj.set('aBooleanField', true);
+    describe('should not serialize transient', function (){
+      it('fields', function () {
+        testObj.set('aTransientField', 'foo');
 
-      var serializedObj = testObj.toObject();
+        var serializedObj = testObj.toObject();
 
-      expect(serializedObj.aBooleanField).toBe(true);
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBeUndefined();
+        expect(serializedObj.aBooleanField).toBeUndefined();
+        expect(serializedObj.aDateField).toBeUndefined();
+        expect(serializedObj.aNumberField).toBeUndefined();
+        expect(serializedObj.aStringField).toBeUndefined();
+        expect(serializedObj.aNestedObjectField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      });
 
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aStringListField).toEqual([]);
+      it('lists', function () {
+        testObj.set('aTransientListField', ['foo', 'bar']);
 
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
+        var serializedObj = testObj.toObject();
 
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
+        expect(serializedObj.aBooleanField).toBeUndefined();
+        expect(serializedObj.aDateField).toBeUndefined();
+        expect(serializedObj.aNumberField).toBeUndefined();
+        expect(serializedObj.aStringField).toBeUndefined();
+        expect(serializedObj.aNestedObjectField).toBeUndefined();
+        expect(serializedObj.aNestedObjectListField).toEqual([]);
+        expect(serializedObj.aTransientField).toBeUndefined();
+        expect(serializedObj.aTransientListField).toBeUndefined();
+      })
     });
 
-    it('should serialize dates into ISO-8601 formatted strings', function () {
-      var now = new Date();
-      testObj.set('aDateField', now);
+    describe('should have a dirty ObjectState after changing', function () {
+      it('primitive fields', function() {
+        SerializableObject.fromJson({aStringField: 'foo'}, TestObject, testObj);
+        testObj.set('aStringField', 'foo');
+        expect(testObj.get('objectState.isDirty')).toBe(false);
+        testObj.set('aStringField', 'bar');
+        expect(testObj.get('objectState.isDirty')).toBe(true);
+      });
 
-      var serializedObj = testObj.toObject();
+      it('nested object fields', function () {
+        SerializableObject.fromJson({ aNestedObjectField: {aNestedStringField:'foo'}}, TestObject, testObj);
+        var nestedObjectFieldValue = testObj.get('aNestedObjectField');
+        testObj.set('aNestedObjectField', nestedObjectFieldValue);
+        expect(testObj.get('objectState.isDirty')).toBe(false);
+        testObj.set('aNestedObjectField', NestedObject.create());
+        expect(testObj.get('objectState.isDirty')).toBe(true);
+      });
 
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBe(moment(now).format());
-      expect(serializedObj.aNumberField).toBeUndefined();
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
     });
 
-    it('should serialize number', function () {
-      testObj.set('aNumberField', 123);
-
-      var serializedObj = testObj.toObject();
-
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBe(123);
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
+    it('should have an unwrapRootObject class method', function () {
+      expect(SerializableObject.unwrapRootObject).toBeDefined();
+      expect(SerializableObject.unwrapRootObject.constructor).toEqual(Function);
     });
 
-    it('should serialize strings', function () {
-      testObj.set('aStringField', 'foo');
+    describe ('unwrapRootObject class method', function () {
+      it('should unwrap the root object from a JS object, when specifying a type that has a rootKey', function () {
+        var obj = {
+          aBooleanField: true,
+          aNumberField: 123,
+          aStringField: 'hello, world',
+          aStringListField: [],
+          aNestedObjectField: {
+            aNestedStringField: 'foo'
+          },
+          aNestedObjectListField: []
+        };
+        var returnedObj = SerializableObject.unwrapRootObject(RootWrappedTestObject, {rootWrapper: obj});
+        expect(returnedObj).toEqual(obj);
+      });
 
-      var serializedObj = testObj.toObject();
-
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBeUndefined();
-      expect(serializedObj.aStringField).toBe('foo');
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
+      it('should return an unmodified JS object, when specifying a type that does not have a rootKey', function () {
+        var obj = {
+          aBooleanField: true,
+          aNumberField: 123,
+          aStringField: 'hello, world',
+          aStringListField: [],
+          aNestedObjectField: {
+            aNestedStringField: 'foo'
+          },
+          aNestedObjectListField: []
+        };
+        var returnedObj = SerializableObject.unwrapRootObject(TestObject, obj);
+        expect(returnedObj).toEqual(obj);
+      });
     });
 
-    it('should serialize nested objects', function () {
-      var nestedObjectInstance = NestedObject.create().setProperties({aNestedStringField: 'foo', aNestedTransientField: 'fooTransient'});
-      testObj.set('aNestedObjectField', nestedObjectInstance);
-
-      var serializedObj = testObj.toObject();
-
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBeUndefined();
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aNestedObjectField instanceof Object).toBe(true);
-      expect(serializedObj.aNestedObjectField.aNestedStringField).toBe('foo');
-      expect(serializedObj.aNestedObjectField.aNestedTransientField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
+    it('should have a wrapRootObject class method', function () {
+      expect(SerializableObject.wrapRootObject).toBeDefined();
+      expect(SerializableObject.wrapRootObject.constructor).toEqual(Function);
     });
 
-    it('should serialize nested object lists', function () {
-      var nestedObjectInstance1 = NestedObject.create().setProperties({aNestedStringField: 'foo', aNestedTransientField: 'fooTransient'});
-      var nestedObjectInstance2 = NestedObject.create().setProperties({aNestedStringField: 'bar', aNestedTransientField: 'barTransient'});
-      testObj.set('aNestedObjectListField.content', [nestedObjectInstance1, nestedObjectInstance2]);
+    describe ('wrapRootObject class method', function () {
+      it('should wrap a JS object with a root object, when specifying a type that has a rootKey', function () {
+        var obj = {
+          aBooleanField: true,
+          aNumberField: 123,
+          aStringField: 'hello, world',
+          aStringListField: [],
+          aNestedObjectField: {
+            aNestedStringField: 'foo'
+          },
+          aNestedObjectListField: []
+        };
+        var returnedObj = SerializableObject.wrapRootObject(RootWrappedTestObject, obj);
+        expect(returnedObj.rootWrapper).toBeDefined();
+        expect(returnedObj.rootWrapper).toEqual(obj);
+      });
 
-      var serializedObj = testObj.toObject();
-
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBeUndefined();
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField instanceof Array).toBe(true);
-      expect(serializedObj.aNestedObjectListField[0] instanceof Object).toBe(true);
-      expect(serializedObj.aNestedObjectListField[0].aNestedStringField).toBe('foo');
-      expect(serializedObj.aNestedObjectListField[0].aNestedTransientField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField[1] instanceof Object).toBe(true);
-      expect(serializedObj.aNestedObjectListField[1].aNestedStringField).toBe('bar');
-      expect(serializedObj.aNestedObjectListField[1].aNestedTransientField).toBeUndefined();
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
+      it('should return an unmodified JS object, when specifying a type that does not have a rootKey', function () {
+        var obj = {
+          aBooleanField: true,
+          aNumberField: 123,
+          aStringField: 'hello, world',
+          aStringListField: [],
+          aNestedObjectField: {
+            aNestedStringField: 'foo'
+          },
+          aNestedObjectListField: []
+        };
+        var returnedObj = SerializableObject.wrapRootObject(TestObject, obj);
+        expect(returnedObj).toEqual(obj);
+      });
     });
 
-    it('should not serialize transient fields', function () {
-      testObj.set('aTransientField', 'foo');
+    describe('maintain an isLoading state, which', function () {
+      it('should be true before an object has been deserialized', function () {
+        expect(testObj.get('objectState.isLoading')).toBe(true);
+        expect(testObj.get('objectState.isLoaded')).toBe(false);
+      });
 
-      var serializedObj = testObj.toObject();
+      it('should be false after an object has been deserialized', function () {
+        SerializableObject.fromJson({aBooleanField: 'true'}, TestObject, testObj);
 
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBeUndefined();
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
+        expect(testObj.get('objectState.isLoading')).toBe(false);
+        expect(testObj.get('objectState.isLoaded')).toBe(true);
+      });
     });
 
-    it('should not serialize transient lists', function () {
-      testObj.set('aTransientListField', ['foo', 'bar']);
-
-      var serializedObj = testObj.toObject();
-
-      expect(serializedObj.aBooleanField).toBeUndefined();
-      expect(serializedObj.aDateField).toBeUndefined();
-      expect(serializedObj.aNumberField).toBeUndefined();
-      expect(serializedObj.aStringField).toBeUndefined();
-      expect(serializedObj.aNestedObjectField).toBeUndefined();
-      expect(serializedObj.aNestedObjectListField).toEqual([]);
-      expect(serializedObj.aTransientField).toBeUndefined();
-      expect(serializedObj.aTransientListField).toBeUndefined();
-    });
-
-    it('should deserialize booleans', function () {
-      SerializableObject.fromJson({aBooleanField: 'true'}, TestObject, testObj);
-
-      expect(testObj.get('aBooleanField')).toBe(true);
-    });
-
-    it('should deserialize dates from ISO-8601 formatted strings', function () {
-      var now = moment().format();
-      SerializableObject.fromJson({aDateField: now}, TestObject, testObj);
-
-      var dateFieldValue = testObj.get('aDateField');
-      expect(dateFieldValue instanceof Date).toBe(true);
-      expect(moment(dateFieldValue).format()).toBe(now);
-    });
-
-    it('should deserialize numbers', function () {
-      SerializableObject.fromJson({aNumberField: '123'}, TestObject, testObj);
-
-      expect(testObj.get('aNumberField')).toBe(123);
-    });
-
-    it('should deserialize strings', function () {
-      SerializableObject.fromJson({aStringField: 'foo'}, TestObject, testObj);
-
-      expect(testObj.get('aStringField')).toBe('foo');
-    });
-
-    it('should deserialize embedded objects', function () {
-      SerializableObject.fromJson({aNestedObjectField: {aNestedStringField:'foo'}}, TestObject, testObj);
-
-      var nestedObjectFieldValue = testObj.get('aNestedObjectField');
-      expect(nestedObjectFieldValue instanceof NestedObject).toBe(true);
-      expect(nestedObjectFieldValue).not.toBeUndefined();
-      expect(nestedObjectFieldValue.get('aNestedStringField')).toBe('foo');
-    });
-
-    it('should deserialize transient fields', function () {
-      SerializableObject.fromJson({aTransientField: 'foo'}, TestObject, testObj);
-
-      expect(testObj.get('aTransientField')).toBe('foo');
-    });
-
-    it('should dirty after changing primitive field', function() {
-      SerializableObject.fromJson({aStringField: 'foo'}, TestObject, testObj);
-      testObj.set('aStringField', 'foo');
-      expect(testObj.get('objectState.isDirty')).toBe(false);
-      testObj.set('aStringField', 'bar');
-      expect(testObj.get('objectState.isDirty')).toBe(true);
-    });
-
-    it('should dirty after changing nested object field', function () {
-      SerializableObject.fromJson({ aNestedObjectField: {aNestedStringField:'foo'}}, TestObject, testObj);
-      var nestedObjectFieldValue = testObj.get('aNestedObjectField');
-      testObj.set('aNestedObjectField', nestedObjectFieldValue);
-      expect(testObj.get('objectState.isDirty')).toBe(false);
-      testObj.set('aNestedObjectField', NestedObject.create());
-      expect(testObj.get('objectState.isDirty')).toBe(true);
-    });
 
   });
 

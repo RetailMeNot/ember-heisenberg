@@ -74,7 +74,7 @@ define([
       if (startAt === undefined) startAt = 0;
       if (startAt < 0) startAt += len;
 
-      for(idx=startAt;idx<len;idx++) {
+      for (idx=startAt; idx<len; idx++) {
         if (Em.isEqual(object, this.objectAt(idx))) return idx;
       }
       return -1;
