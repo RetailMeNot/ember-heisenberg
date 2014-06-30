@@ -1,17 +1,5 @@
 // Karma configuration
 
-// ES5 Shim is necessary for PhantomJS support
-var es5ShimPlugin = {
-  'framework:shim': ['factory', function(files) {
-    files.unshift({
-      pattern: 'node_modules/es5-shim/es5-shim.js',
-      included: true,
-      served: true,
-      watched: false
-    });
-  }]
-};
-
 module.exports = function(config) {
   config.set({
 
@@ -22,6 +10,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      // ES5 Shim is necessary for PhantomJS support
       'node_modules/es5-shim/es5-shim.js',
 
       // Hack to load RequireJS after the shim libs (see https://github.com/karma-runner/karma/issues/699)

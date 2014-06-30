@@ -32,9 +32,21 @@ module.exports = function (grunt) {
     karma: {
       unit: {
         configFile: 'karma.conf.js',
-        browsers: ['PhantomJS'],
-        reporters: ['coverage'],
+        browsers: ['PhantomJS', 'Chrome', 'Firefox'],
         singleRun: true
+      },
+      ci: {
+        configFile: 'karma.conf.js',
+        browsers: ['PhantomJS'],
+        reporters: ['teamcity', 'coverage'],
+        singleRun: true,
+        colors: false,
+        coverageReporter: {
+          reporters: [
+            { type: 'html', dir:'coverage/' },
+            { type: 'teamcity' }
+          ]
+        }
       },
       dev: {
         configFile: 'karma.conf.js',
@@ -85,6 +97,9 @@ module.exports = function (grunt) {
 
   // Default task(s).
   grunt.registerTask('build', ['clean', 'jshint', 'karma:unit', 'requirejs']);
+  grunt.registerTask('build_ci', ['clean', 'jshint', 'karma:ci', 'requirejs']);
   grunt.registerTask('dist', ['build', 'copy', 'uglify', 'clean']);
+  grunt.registerTask('dist_ci', ['build_ci', 'copy', 'uglify', 'clean']);
   grunt.registerTask('default', ['dist']);
+
 };
