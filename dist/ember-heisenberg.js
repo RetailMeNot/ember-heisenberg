@@ -1530,8 +1530,8 @@ define('Resource',[
           .then(checkNull)
           .then(unwrapRoot)
           .then(deserialize(instance))
-          .fail(handleNotFoundError)
-          .fail(setErrorFlag.bind(this, instance));
+          .catch(handleNotFoundError)
+          .catch(setErrorFlag.bind(this, instance));
 
       return this.createResponseObject(instance, promise);
       function setErrorFlag(instance, error) {
@@ -1672,6 +1672,7 @@ define('Resource',[
 
   return EH.Resource;
 });
+
 define('ember-heisenberg',[
   './EH',
   './AjaxRequest',

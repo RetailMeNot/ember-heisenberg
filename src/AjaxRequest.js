@@ -122,7 +122,7 @@ define([
      *   .then(function(result) {
      *     // happy
      *   }.bind(this))
-     *   .fail(function(result) {
+     *   .catch(function(result) {
      *     if (iCanHandleError(result)) {
      *       handleError(result);
      *     } else {
